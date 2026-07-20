@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }} - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4 fade-in-up">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0 fw-bold">{{ job.title }}</h2>
+                        <div>
+                            <span class="badge bg-{% if job.status == 'open' %}success{% elif job.status == 'in_progress' %}warning{% else %}secondary{% endif %} me-2">
+                                {{ job.get_status_display }}
+                            </span>
+                            {% if job.category %}
+                                <span class="badge bg-info">{{ job.category.name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-file-text"></i> Description</h5>
+                        <p class="text-muted" style="line-height: 1.8;">{{ job.description|linebreaks }}</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-tags"></i> Required Skills</h5>
+                        <div>
+                            {% for skill in job.get_required_skills_list %}
+                                <span class="badge bg-primary me-2 mb-2" style="font-size: 0.9rem; padding: 0.5rem 1rem;">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-currency-dollar text-success me-2" style="font-size: 1.5rem;"></i>
+                                    <strong>Budget</strong>
+                                </div>
+                                {% if job.budget %}
+                                    <h4 class="text-success mb-0 fw-bold">${{ job.budget }}</h4>
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-clock text-info me-2" style="font-size: 1.5rem;"></i>
+                                    <strong>Hourly Rate</strong>
+                                </div>
+                                {% if job.hourly_rate %}
+                                    <h4 class="text-info mb-0 fw-bold">${{ job.hourly_rate }}/hr</h4>
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if job.deadline %}
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar-event text-warning me-2" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <strong>Deadline:</strong> 
+                                    <span class="text-muted">{{ job.deadline|date:"F d, Y" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="border-top pt-3">
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="bi bi-person-circle me-2"></i>
+                            <span class="me-4">Posted by: <strong>{{ job.client.username }}</strong></span>
+                            <i class="bi bi-calendar me-2"></i>
+                            <span>Posted on: {{ job.created_at|date:"F d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 100px;">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-lightning-charge"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.user_type == 'freelancer' %}
+                        {% if has_applied %}
+                            <div class="alert alert-info border-0">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <strong>Application Submitted</strong>
+                                </div>
+                                {% if application.status == 'pending' %}
+                                    <p class="mb-0">
+                                        <span class="badge bg-warning">Pending Review</span>
+                                    </p>
+                                {% elif application.status == 'accepted' %}
+                                    <p class="mb-0">
+                                        <span class="badge bg-success">Accepted! 🎉</span>
+                                    </p>
+                                {% elif application.status == 'rejected' %}
+                                    <p class="mb-0">
+                                        <span class="badge bg-danger">Rejected</span>
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% elif job.status == 'open' %}
+                            <a href="{% url 'jobs:apply_job' job.id %}" class="btn btn-primary w-100 mb-3 btn-lg">
+                                <i class="bi bi-send"></i> Apply for this Job
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary w-100 mb-3" disabled>
+                                <i class="bi bi-lock"></i> Job is {{ job.get_status_display }}
+                            </button>
+                        {% endif %}
+                    {% elif user.user_type == 'client' and job.client == user %}
+                        <a href="{% url 'jobs:manage_applications' job.id %}" class="btn btn-primary w-100 mb-3 btn-lg">
+                            <i class="bi bi-people"></i> Manage Applications
+                            {% if job.applications.count > 0 %}
+                                <span class="badge bg-light text-dark ms-2">{{ job.applications.count }}</span>
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'jobs:home' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-left"></i> Back to Jobs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

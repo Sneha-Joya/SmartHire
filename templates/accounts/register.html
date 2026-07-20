@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h3 class="mb-0 fw-bold"><i class="bi bi-person-plus"></i> Create Your Account</h3>
+                    <p class="text-muted mb-0 mt-2">Join QuickLance and start your freelancing journey</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-person me-1"></i> Username *
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-envelope me-1"></i> Email *
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-person-badge me-1"></i> Account Type *
+                            </label>
+                            <div class="row g-3">
+                                {% for choice in form.user_type %}
+                                    <div class="col-md-6">
+                                        <div class="card border-2 {% if choice.choice_value == 'client' %}border-primary{% else %}border-success{% endif %}">
+                                            <div class="card-body p-3">
+                                                <div class="form-check">
+                                                    {{ choice.tag }}
+                                                    <label class="form-check-label w-100" for="{{ choice.id_for_label }}">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-{% if choice.choice_value == 'client' %}building{% else %}person-workspace{% endif %} me-2" style="font-size: 1.5rem;"></i>
+                                                            <div>
+                                                                <strong>{{ choice.choice_label }}</strong>
+                                                                <small class="d-block text-muted">
+                                                                    {% if choice.choice_value == 'client' %}
+                                                                        Post jobs and hire freelancers
+                                                                    {% else %}
+                                                                        Find work and showcase skills
+                                                                    {% endif %}
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.user_type.errors %}
+                                <div class="text-danger small mt-2">{{ form.user_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-telephone me-1"></i> Phone Number
+                                </label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <div class="text-danger small mt-1">{{ form.phone_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-image me-1"></i> Profile Picture
+                                </label>
+                                {{ form.profile_picture }}
+                                {% if form.profile_picture.errors %}
+                                    <div class="text-danger small mt-1">{{ form.profile_picture.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-lock me-1"></i> Password *
+                                </label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-lock-fill me-1"></i> Confirm Password *
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Create Account
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-muted mb-0">
+                                Already have an account? 
+                                <a href="{% url 'accounts:login' %}" class="fw-bold text-decoration-none">Login here</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

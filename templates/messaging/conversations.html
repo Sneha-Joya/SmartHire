@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold gradient-text mb-2">Messages</h1>
+            <p class="text-muted">Your conversations</p>
+        </div>
+    </div>
+
+    {% if conversations_data %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        {% for item in conversations_data %}
+                            {% with conversation=item.conversation other_user=item.other_user %}
+                            <a href="{% url 'messaging:conversation_detail' conversation.id %}" class="text-decoration-none text-dark">
+                                <div class="card mb-3 hover-shadow">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-8">
+                                                <h5 class="fw-bold mb-1">
+                                                    <i class="bi bi-person-circle me-2"></i>
+                                                    {{ other_user.username }}
+                                                </h5>
+                                                {% if conversation.job %}
+                                                    <p class="text-muted mb-0">
+                                                        <i class="bi bi-briefcase me-1"></i>
+                                                        {{ conversation.job.title }}
+                                                    </p>
+                                                {% endif %}
+                                                {% with last_message=conversation.messages.last %}
+                                                    {% if last_message %}
+                                                        <p class="text-muted mt-2 mb-0">
+                                                            {{ last_message.content|truncatewords:20 }}
+                                                        </p>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                            <div class="col-md-4 text-md-end">
+                                                {% with last_message=conversation.messages.last %}
+                                                    {% if last_message %}
+                                                        <small class="text-muted">
+                                                            {{ last_message.created_at|timesince }} ago
+                                                        </small>
+                                                        {% if not last_message.is_read and last_message.sender != user %}
+                                                            <span class="badge bg-primary ms-2">New</span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+            <h3 class="fw-bold mb-3">No conversations yet</h3>
+            <p class="text-muted">Start a conversation with someone from a job or application</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Project: {{ project.job.title }} - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'jobs:my_projects' %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left"></i> Back to Projects
+            </a>
+            <h1 class="display-6 fw-bold gradient-text mb-2">{{ project.job.title }}</h1>
+            <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}primary{% else %}secondary{% endif %} fs-6">
+                {{ project.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Project Updates Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-activity"></i> Project Updates</h5>
+                    {% if project.status == 'active' and user.user_type == 'freelancer' and project.freelancer == user %}
+                        <a href="{% url 'jobs:create_project_update' project.id %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> Post Update
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if updates %}
+                        {% for update in updates %}
+                            <div class="card mb-3 border-left border-primary border-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{{ update.title }}</h6>
+                                            <span class="badge bg-{% if update.status == 'ready_for_review' %}success{% elif update.status == 'milestone_reached' %}info{% else %}secondary{% endif %}">
+                                                {{ update.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ update.created_at|date:"M d, Y" }}
+                                        </small>
+                                    </div>
+                                    <p class="text-muted mb-3">{{ update.description|linebreaks }}</p>
+                                    
+                                    {% if update.attachment %}
+                                        <div class="mb-3">
+                                            <a href="{{ update.attachment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-paperclip"></i> View Attachment
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Show feedbacks for this update -->
+                                    {% if update.feedbacks.all %}
+                                        <div class="border-top pt-3 mt-3">
+                                            <h6 class="fw-bold mb-2"><i class="bi bi-chat-left-text"></i> Client Feedback:</h6>
+                                            {% for feedback in update.feedbacks.all %}
+                                                <div class="card mb-2 {% if feedback.is_approved %}border-success{% else %}border-warning{% endif %}">
+                                                    <div class="card-body p-3">
+                                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                                            <div>
+                                                                <span class="badge bg-{% if feedback.feedback_type == 'approval' %}success{% elif feedback.feedback_type == 'revision' %}warning{% else %}info{% endif %}">
+                                                                    {{ feedback.get_feedback_type_display }}
+                                                                </span>
+                                                                {% if feedback.is_approved %}
+                                                                    <span class="badge bg-success ms-2">Approved</span>
+                                                                {% endif %}
+                                                            </div>
+                                                            <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+                                                        </div>
+                                                        <p class="mb-0">{{ feedback.comment|linebreaks }}</p>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Client can add feedback -->
+                                    {% if project.status == 'active' and user.user_type == 'client' and project.client == user %}
+                                        <div class="mt-3">
+                                            <a href="{% url 'jobs:add_project_feedback' update.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-chat-dots"></i> Add Feedback
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p class="mt-3">No updates posted yet.</p>
+                            {% if project.status == 'active' and user.user_type == 'freelancer' and project.freelancer == user %}
+                                <a href="{% url 'jobs:create_project_update' project.id %}" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Post First Update
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Project Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-bold">Project Details</h5>
+                </div>
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Job Description</h5>
+                    <p class="text-muted" style="line-height: 1.8;">{{ project.job.description|linebreaks }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <strong>Budget:</strong>
+                                {% if project.job.budget %}
+                                    <h5 class="text-success mb-0 fw-bold">${{ project.job.budget }}</h5>
+                                {% elif project.job.hourly_rate %}
+                                    <h5 class="text-info mb-0 fw-bold">${{ project.job.hourly_rate }}/hr</h5>
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <strong>Started:</strong>
+                                <p class="mb-0">{{ project.started_at|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-bold">Project Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Client:</strong>
+                        <p class="mb-0">{{ project.client.username }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Freelancer:</strong>
+                        <p class="mb-0">{{ project.freelancer.username }}</p>
+                    </div>
+                    {% if project.completed_at %}
+                        <div class="mb-3">
+                            <strong>Completed:</strong>
+                            <p class="mb-0">{{ project.completed_at|date:"F d, Y" }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-bold">Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.user_type == 'client' %}
+                        <a href="{% url 'messaging:start_conversation_with_job' project.freelancer.id project.job.id %}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-chat"></i> Send Message
+                        </a>
+                    {% else %}
+                        <a href="{% url 'messaging:start_conversation_with_job' project.client.id project.job.id %}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-chat"></i> Send Message
+                        </a>
+                    {% endif %}
+                    {% if project.status == 'active' and user.user_type == 'client' %}
+                        <form method="post" action="{% url 'jobs:complete_project' project.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success w-100 mb-2">
+                                <i class="bi bi-check-circle"></i> Mark as Completed
+                            </button>
+                        </form>
+                    {% endif %}
+                    {% if project.status == 'completed' and user.user_type == 'client' and project.client == user %}
+                        {% if not has_review %}
+                            <a href="{% url 'reviews:create_review' project.job.id %}" class="btn btn-warning w-100">
+                                <i class="bi bi-star"></i> Leave a Review
+                            </a>
+                        {% else %}
+                            <div class="alert alert-success border-0 mb-0">
+                                <i class="bi bi-check-circle"></i> Review Submitted
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

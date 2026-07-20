@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}My Jobs - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold gradient-text mb-2">My Posted Jobs</h1>
+                    <p class="text-muted">Manage your job postings and applications</p>
+                </div>
+                <a href="{% url 'jobs:post_job' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Post New Job
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if jobs %}
+        <div class="row g-4">
+            {% for job in jobs %}
+                <div class="col-md-6 col-lg-4 fade-in-up">
+                    <div class="card h-100 job-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title fw-bold mb-0">
+                                    <a href="{% url 'jobs:job_detail' job.id %}" class="text-decoration-none text-dark">
+                                        {{ job.title|truncatewords:8 }}
+                                    </a>
+                                </h5>
+                                <span class="badge bg-{% if job.status == 'open' %}success{% elif job.status == 'in_progress' %}warning{% elif job.status == 'completed' %}primary{% else %}secondary{% endif %}">
+                                    {{ job.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="card-text text-muted mb-3">
+                                {{ job.description|truncatewords:20 }}
+                            </p>
+                            <div class="mb-3">
+                                {% if job.category %}
+                                    <span class="badge bg-secondary me-1">{{ job.category.name }}</span>
+                                {% endif %}
+                                {% if job.budget %}
+                                    <span class="badge bg-success">${{ job.budget }}</span>
+                                {% elif job.hourly_rate %}
+                                    <span class="badge bg-info">${{ job.hourly_rate }}/hr</span>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ job.created_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{% url 'jobs:manage_applications' job.id %}" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-people"></i> Applications
+                                    {% if job.applications.count > 0 %}
+                                        <span class="badge bg-info text-white ms-1">{{ job.applications.count }}</span>
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <h3 class="fw-bold mb-3">No jobs posted yet</h3>
+            <p class="text-muted mb-4">Start by posting your first job and find talented freelancers</p>
+            <a href="{% url 'jobs:post_job' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Post Your First Job
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

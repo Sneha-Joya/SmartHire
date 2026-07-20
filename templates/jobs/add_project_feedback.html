@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Feedback - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card fade-in-up mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-bold">Project Update</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">{{ update.title }}</h6>
+                    <p class="text-muted mb-2">{{ update.description|truncatewords:50 }}</p>
+                    <span class="badge bg-info">{{ update.get_status_display }}</span>
+                </div>
+            </div>
+            
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h3 class="mb-0 fw-bold"><i class="bi bi-chat-dots"></i> Provide Feedback</h3>
+                    <p class="text-muted mb-0 mt-2">Share your thoughts on this update</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.feedback_type.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-tag me-1"></i> Feedback Type *
+                            </label>
+                            {{ form.feedback_type }}
+                            {% if form.feedback_type.errors %}
+                                <div class="text-danger small mt-1">{{ form.feedback_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-chat-text me-1"></i> Your Feedback *
+                            </label>
+                            {{ form.comment }}
+                            <small class="form-text text-muted">Provide approval, request revisions, ask questions, or share compliments</small>
+                            {% if form.comment.errors %}
+                                <div class="text-danger small mt-1">{{ form.comment.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-check">
+                            {{ form.is_approved }}
+                            <label for="{{ form.is_approved.id_for_label }}" class="form-check-label fw-semibold">
+                                Approve this update
+                            </label>
+                            <small class="form-text text-muted d-block">Check this if you approve the work shown in this update</small>
+                            {% if form.is_approved.errors %}
+                                <div class="text-danger small mt-1">{{ form.is_approved.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Submit Feedback
+                            </button>
+                            <a href="{% url 'jobs:project_detail' project.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Conversation with {{ other_user.username }} - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'messaging:conversations' %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left"></i> Back to Messages
+            </a>
+            <h4 class="fw-bold">
+                <i class="bi bi-person-circle me-2"></i>
+                Conversation with {{ other_user.username }}
+            </h4>
+            {% if conversation.job %}
+                <p class="text-muted">
+                    <i class="bi bi-briefcase me-1"></i>
+                    <a href="{% url 'jobs:job_detail' conversation.job.id %}">{{ conversation.job.title }}</a>
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card" style="height: 500px; display: flex; flex-direction: column;">
+                <div class="card-body" style="flex: 1; overflow-y: auto;">
+                    {% for message in messages %}
+                        <div class="mb-3 {% if message.sender == user %}text-end{% endif %}">
+                            <div class="d-inline-block p-3 rounded {% if message.sender == user %}bg-primary text-white{% else %}bg-light{% endif %}" style="max-width: 70%;">
+                                <div class="fw-bold mb-1">{{ message.sender.username }}</div>
+                                <div>{{ message.content|linebreaks }}</div>
+                                <small class="opacity-75">{{ message.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center text-muted mt-5">
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" name="content" class="form-control" placeholder="Type your message..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to bottom
+    const messagesContainer = document.querySelector('.card-body');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+</script>
+{% endblock %}
+
+

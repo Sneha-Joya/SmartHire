@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - QuickLance{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="container mb-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-5 fw-bold gradient-text mb-2">
+                        Welcome back, {{ user.username }}!
+                    </h1>
+                    <p class="text-muted">
+                        {% if user.user_type == 'client' %}
+                            Find talented freelancers for your projects
+                        {% else %}
+                            Discover exciting job opportunities
+                        {% endif %}
+                    </p>
+                </div>
+                {% if user.user_type == 'client' %}
+                    <a href="{% url 'jobs:post_job' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle"></i> Post a Job
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="container mb-4">
+    <div class="search-box">
+        <form method="get" action="{% url 'jobs:home' %}">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" name="search" placeholder="Search jobs by title or description..." value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Job Listings -->
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Available Jobs</h2>
+        <span class="badge bg-primary">{{ jobs.paginator.count }} job{{ jobs.paginator.count|pluralize }}</span>
+    </div>
+
+    {% if jobs %}
+        <div class="row g-4">
+            {% for job in jobs %}
+                <div class="col-md-6 col-lg-4 fade-in-up">
+                    <div class="card job-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title fw-bold mb-0">
+                                    <a href="{% url 'jobs:job_detail' job.id %}" class="text-decoration-none text-dark">
+                                        {{ job.title|truncatewords:8 }}
+                                    </a>
+                                </h5>
+                                {% if job.category %}
+                                    <span class="badge bg-secondary">{{ job.category.name }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="card-text text-muted mb-3">
+                                {{ job.description|truncatewords:20 }}
+                            </p>
+                            <div class="mb-3">
+                                {% for skill in job.get_required_skills_list|slice:":3" %}
+                                    <span class="badge bg-light text-dark me-1">{{ skill }}</span>
+                                {% endfor %}
+                                {% if job.get_required_skills_list|length > 3 %}
+                                    <span class="badge bg-light text-dark">+{{ job.get_required_skills_list|length|add:"-3" }} more</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                {% if job.budget %}
+                                    <span class="fw-bold text-success">${{ job.budget }}</span>
+                                {% elif job.hourly_rate %}
+                                    <span class="fw-bold text-info">${{ job.hourly_rate }}/hr</span>
+                                {% else %}
+                                    <span class="text-muted">Rate not specified</span>
+                                {% endif %}
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ job.created_at|timesince }} ago
+                                </small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> {{ job.client.username }}
+                                </small>
+                                <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-primary btn-sm">
+                                    View Details <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h3 class="fw-bold mb-3">No jobs found</h3>
+            <p class="text-muted mb-4">
+                {% if search_query or selected_category %}
+                    Try adjusting your search criteria
+                {% else %}
+                    {% if user.user_type == 'client' %}
+                        Be the first to post a job!
+                    {% else %}
+                        Check back later for new opportunities
+                    {% endif %}
+                {% endif %}
+            </p>
+            {% if user.user_type == 'client' and not search_query and not selected_category %}
+                <a href="{% url 'jobs:post_job' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Post Your First Job
+                </a>
+            {% endif %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if jobs.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if jobs.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ jobs.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ jobs.number }} of {{ jobs.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if jobs.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ jobs.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ jobs.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

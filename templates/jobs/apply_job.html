@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for {{ job.title }} - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle"></i> Job Summary</h5>
+                </div>
+                <div class="card-body">
+                    <h4 class="fw-bold mb-3">{{ job.title }}</h4>
+                    <p class="text-muted">{{ job.description|truncatewords:30 }}</p>
+                    <div class="mb-3">
+                        {% if job.budget %}
+                            <span class="badge bg-success me-2">Budget: ${{ job.budget }}</span>
+                        {% endif %}
+                        {% if job.hourly_rate %}
+                            <span class="badge bg-info">Rate: ${{ job.hourly_rate }}/hr</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>Required Skills:</strong>
+                        <div class="mt-2">
+                            {% for skill in job.get_required_skills_list|slice:":5" %}
+                                <span class="badge bg-primary me-1 mb-1">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h3 class="mb-0 fw-bold"><i class="bi bi-send"></i> Submit Your Application</h3>
+                    <p class="text-muted mb-0 mt-2">Tell the client why you're the perfect fit</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.proposal.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-file-earmark-text me-1"></i> Proposal *
+                            </label>
+                            {{ form.proposal }}
+                            <small class="form-text text-muted">Explain why you are the best fit for this job, your relevant experience, and how you plan to complete the project.</small>
+                            {% if form.proposal.errors %}
+                                <div class="text-danger small mt-1">{{ form.proposal.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.proposed_rate.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-currency-dollar me-1"></i> Proposed Rate
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.proposed_rate }}
+                                </div>
+                                {% if form.proposed_rate.errors %}
+                                    <div class="text-danger small mt-1">{{ form.proposed_rate.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.estimated_hours.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-clock me-1"></i> Estimated Hours
+                                </label>
+                                <div class="input-group">
+                                    {{ form.estimated_hours }}
+                                    <span class="input-group-text">hours</span>
+                                </div>
+                                {% if form.estimated_hours.errors %}
+                                    <div class="text-danger small mt-1">{{ form.estimated_hours.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send"></i> Submit Application
+                            </button>
+                            <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

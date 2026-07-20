@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}My Projects - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold gradient-text mb-2">My Projects</h1>
+            <p class="text-muted">Manage your active and completed projects</p>
+        </div>
+    </div>
+
+    {% if projects_data %}
+        <div class="row g-4">
+            {% for item in projects_data %}
+                {% with project=item.project %}
+                <div class="col-md-6 col-lg-4 fade-in-up">
+                    <div class="card h-100 job-card">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold mb-3">
+                                <a href="{% url 'jobs:project_detail' project.id %}" class="text-decoration-none text-dark">
+                                    {{ project.job.title }}
+                                </a>
+                            </h5>
+                            <div class="mb-3">
+                                <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}primary{% else %}secondary{% endif %}">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="mb-3">
+                                {% if user.user_type == 'client' %}
+                                    <p class="text-muted mb-1">
+                                        <strong>Freelancer:</strong> {{ project.freelancer.username }}
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted mb-1">
+                                        <strong>Client:</strong> {{ project.client.username }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> Started: {{ project.started_at|date:"M d, Y" }}
+                                </small>
+                                {% if project.updates.count > 0 %}
+                                    <br>
+                                    <small class="text-info">
+                                        <i class="bi bi-activity"></i> {{ project.updates.count }} update{{ project.updates.count|pluralize }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'jobs:project_detail' project.id %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                                {% if user.user_type == 'client' %}
+                                    <a href="{% url 'messaging:start_conversation_with_job' project.freelancer.id project.job.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-chat"></i> Message
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'messaging:start_conversation_with_job' project.client.id project.job.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-chat"></i> Message
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">
+                <i class="bi bi-folder"></i>
+            </div>
+            <h3 class="fw-bold mb-3">No projects yet</h3>
+            <p class="text-muted">
+                {% if user.user_type == 'client' %}
+                    Projects will appear here when you hire a freelancer
+                {% else %}
+                    Projects will appear here when you get hired for a job
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

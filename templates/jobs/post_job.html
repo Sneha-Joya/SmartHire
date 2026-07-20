@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Post a Job - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h3 class="mb-0 fw-bold"><i class="bi bi-plus-circle"></i> Post a New Job</h3>
+                    <p class="text-muted mb-0 mt-2">Fill in the details to find the perfect freelancer</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-briefcase me-1"></i> Job Title *
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-file-text me-1"></i> Description *
+                            </label>
+                            {{ form.description }}
+                            <small class="form-text text-muted">Provide a detailed description of the job requirements</small>
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-tags me-1"></i> Category
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.deadline.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-event me-1"></i> Deadline
+                                </label>
+                                {{ form.deadline }}
+                                {% if form.deadline.errors %}
+                                    <div class="text-danger small mt-1">{{ form.deadline.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.budget.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-currency-dollar me-1"></i> Fixed Budget
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.budget }}
+                                </div>
+                                <small class="form-text text-muted">{{ form.budget.help_text }}</small>
+                                {% if form.budget.errors %}
+                                    <div class="text-danger small mt-1">{{ form.budget.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.hourly_rate.id_for_label }}" class="form-label fw-semibold">
+                                    <i class="bi bi-clock me-1"></i> Hourly Rate
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.hourly_rate }}
+                                    <span class="input-group-text">/hr</span>
+                                </div>
+                                <small class="form-text text-muted">{{ form.hourly_rate.help_text }}</small>
+                                {% if form.hourly_rate.errors %}
+                                    <div class="text-danger small mt-1">{{ form.hourly_rate.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.required_skills.id_for_label }}" class="form-label fw-semibold">
+                                <i class="bi bi-tools me-1"></i> Required Skills
+                            </label>
+                            {{ form.required_skills }}
+                            <small class="form-text text-muted">Separate skills with commas (e.g., Python, Django, JavaScript)</small>
+                            {% if form.required_skills.errors %}
+                                <div class="text-danger small mt-1">{{ form.required_skills.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Post Job
+                            </button>
+                            <a href="{% url 'jobs:home' %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

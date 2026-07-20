@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Applications - {{ job.title }} - QuickLance{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left"></i> Back to Job
+            </a>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold gradient-text mb-2">Applications for: {{ job.title }}</h1>
+                    <p class="text-muted">
+                        Status: <span class="badge bg-{% if job.status == 'open' %}success{% elif job.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                            {{ job.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if applications %}
+        <div class="row g-4">
+            {% for application in applications %}
+                <div class="col-12 fade-in-up">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="bi bi-person-circle me-2"></i> {{ application.freelancer.username }}
+                                </h5>
+                                {% if application.freelancer.freelancer_profile %}
+                                    <small class="text-muted">
+                                        <i class="bi bi-star-fill text-warning"></i> Rating: {{ application.freelancer.freelancer_profile.rating }}/5.0 | 
+                                        <i class="bi bi-briefcase"></i> {{ application.freelancer.freelancer_profile.total_projects }} projects
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <span class="badge bg-{% if application.status == 'accepted' %}success{% elif application.status == 'rejected' %}danger{% else %}warning{% endif %} fs-6">
+                                {{ application.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="fw-bold mb-3"><i class="bi bi-file-text me-2"></i> Proposal:</h6>
+                                    <p class="text-muted mb-4" style="line-height: 1.8;">{{ application.proposal|linebreaks }}</p>
+                                    
+                                    <div class="row mb-4">
+                                        {% if application.proposed_rate %}
+                                            <div class="col-md-6">
+                                                <div class="p-3 bg-light rounded">
+                                                    <strong>Proposed Rate:</strong>
+                                                    <h5 class="text-success mb-0 fw-bold">${{ application.proposed_rate }}</h5>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        {% if application.estimated_hours %}
+                                            <div class="col-md-6">
+                                                <div class="p-3 bg-light rounded">
+                                                    <strong>Estimated Hours:</strong>
+                                                    <h5 class="text-info mb-0 fw-bold">{{ application.estimated_hours }} hrs</h5>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if application.freelancer.freelancer_profile %}
+                                        <div class="mb-3">
+                                            <h6 class="fw-bold mb-2"><i class="bi bi-person-badge me-2"></i> Freelancer Profile:</h6>
+                                            <p class="text-muted">{{ application.freelancer.freelancer_profile.bio|truncatewords:30 }}</p>
+                                            <div>
+                                                <strong>Skills:</strong>
+                                                {% for skill in application.freelancer.freelancer_profile.get_skills_list %}
+                                                    <span class="badge bg-primary me-1">{{ skill }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> Applied: {{ application.created_at|date:"M d, Y" }}
+                                        </small>
+                                    </div>
+                                    {% if application.status == 'pending' and job.status == 'open' %}
+                                        <div class="d-grid gap-2">
+                                            <a href="{% url 'jobs:accept_application' application.id %}" class="btn btn-success btn-lg">
+                                                <i class="bi bi-check-circle"></i> Accept
+                                            </a>
+                                            <a href="{% url 'jobs:reject_application' application.id %}" class="btn btn-danger">
+                                                <i class="bi bi-x-circle"></i> Reject
+                                            </a>
+                                            <a href="{% url 'messaging:start_conversation_with_job' application.freelancer.id job.id %}" class="btn btn-outline-info">
+                                                <i class="bi bi-chat"></i> Message
+                                            </a>
+                                        </div>
+                                    {% elif application.status == 'accepted' %}
+                                        <div class="alert alert-success border-0">
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                            Application Accepted
+                                        </div>
+                                    {% elif application.status == 'rejected' %}
+                                        <div class="alert alert-danger border-0">
+                                            <i class="bi bi-x-circle-fill me-2"></i>
+                                            Application Rejected
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h3 class="fw-bold mb-3">No applications received yet</h3>
+            <p class="text-muted">Applications will appear here when freelancers apply for this job</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
